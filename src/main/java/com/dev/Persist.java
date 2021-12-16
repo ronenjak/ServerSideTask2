@@ -2,7 +2,9 @@ package com.dev;
 
 import com.dev.objects.PostObject;
 import com.dev.objects.UserObject;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -22,16 +24,53 @@ public class Persist {
         this.sessionFactory = sf;
     }
 
-
     @PostConstruct
     public void createConnectionToDatabase () {
         try {
             this.connection = DriverManager.getConnection(
                     "jdbc:mysql://localhost:3306/ashCollege", "root", "1234");
+
+            //UserObject userObject1 = session.load(UserObject.class, 1); load the user with the id of 1
+
+            /*
+                Session session = sessionFactory.openSession();
+                Transaction transaction = session.beginTransaction();
+                session.saveOrUpdate(userObject);
+                transaction.commit();
+            */
+
+            /*
+                Session session = sessionFactory.openSession();
+                List<UserObject> userList = session.createQuery("FROM UserObject").list();
+                for(UserObject user : userList){
+                    System.out.println(user.getUsername());
+                }
+            */
+
+            /*
+                Session session = sessionFactory.openSession();
+                List<PostObject> postsList = session.createQuery("FROM PostObject").list();
+                for( PostObject post : postsList ){
+                    System.out.println(post.getUserObject().getToken());
+                }
+            */
+
+
+            List<PostObject> postsList = getUserPostsByToken("D00BDAE6F50568AD362B6629C85D5571");
+            if(postsList != null) {
+                for (PostObject post : postsList) {
+                    System.out.println(post.getContent());
+                }
+            }else{
+                System.out.println("no posts for this user");
+            }
+
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
+
 
     public String doesUserExists (String username, String password) {
         String token = null;
@@ -85,31 +124,20 @@ public class Persist {
             }catch (SQLException e){
                 e.printStackTrace();
             }
-
         }
         return success;
 
     }
 
+
     public List<PostObject> getUserPostsByToken(String token){
-        List<PostObject> posts = new ArrayList<>();
-        try{
-            PreparedStatement preparedStatement = this.connection.prepareStatement(
-                    "SELECT content,creation_date FROM posts p INNER JOIN users u ON u.id = p.author_id WHERE u.token = ?"
-            );
-            preparedStatement.setString(1, token);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            while(resultSet.next()){
-                PostObject postObject = new PostObject();
-                postObject.setDate(resultSet.getString("creation_date"));
-                postObject.setContent(resultSet.getString("content"));
-                posts.add(postObject);
-            }
-        }catch (SQLException e){
-            e.printStackTrace();
-        }
-        return posts;
+        List<PostObject> postsList =
+                sessionFactory.openSession().createQuery(
+                    "FROM PostObject p WHERE p.userObject.token = '" + token + "'").list();
+        return postsList;
     }
+
+
 
     public UserObject getFollowerProfilePage(String token, int followerId){
 
@@ -193,5 +221,28 @@ public class Persist {
     }
 
 
+    /*
+        oldversions:
+      public List<PostObject> getUserPostsByToken(String token){
+        List<PostObject> posts = new ArrayList<>();
+        try{
+            PreparedStatement preparedStatement = this.connection.prepareStatement(
+                    "SELECT content,creation_date FROM posts p INNER JOIN users u ON u.id = p.author_id WHERE u.token = ?"
+            );
+            preparedStatement.setString(1, token);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while(resultSet.next()){
+                PostObject postObject = new PostObject();
+                postObject.setDate(resultSet.getString("creation_date"));
+                postObject.setContent(resultSet.getString("content"));
+                posts.add(postObject);
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return posts;
+    }
+
+     */
 
 }
