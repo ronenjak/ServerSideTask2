@@ -33,7 +33,7 @@ public class Persist {
         }
     }
 
-    public String getTokenByUsernameAndPassword(String username, String password) {
+    public String doesUserExists (String username, String password) {
         String token = null;
         try {
             PreparedStatement preparedStatement = this.connection.prepareStatement(
@@ -50,95 +50,147 @@ public class Persist {
         return token;
     }
 
-    public boolean addAccount (UserObject userObject) {
+    public boolean createAccount (String username, String password, String token) {
         boolean success = false;
-        try {
-            PreparedStatement preparedStatement = this.connection.prepareStatement("INSERT INTO users (username, password, token) VALUE (?, ?, ?)");
-            preparedStatement.setString(1, userObject.getUsername());
-            preparedStatement.setString(2, userObject.getPassword());
-            preparedStatement.setString(3, userObject.getToken());
-            preparedStatement.executeUpdate();
-            success = true;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return success;
-
-    }
-
-    public boolean addPost (String token, String content) {
-        boolean success = false;
-        try {
-            Integer userId = getUserIdByToken(token);
-            if (userId != null) {
-                PreparedStatement preparedStatement = this.connection.prepareStatement("INSERT INTO posts (content, creation_date, author_id) VALUE (?, NOW(), ?)");
-                preparedStatement.setString(1, content);
-                preparedStatement.setInt(2, userId);
+        if(!userNameAlreadyExists(username)) {
+            try {
+                PreparedStatement preparedStatement = this.connection.prepareStatement(
+                        "INSERT INTO users (username, password, token) VALUES (?, ?, ?)");
+                preparedStatement.setString(1, username);
+                preparedStatement.setString(2, password);
+                preparedStatement.setString(3,token);
                 preparedStatement.executeUpdate();
                 success = true;
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
         return success;
     }
 
-    public Integer getUserIdByToken (String token) {
-        Integer id = null;
-        try {
-            PreparedStatement preparedStatement = this.connection.prepareStatement("SELECT id FROM users WHERE token = ?");
+    public boolean addPost(String token,String content, String currentDateTime){
+        boolean success = false;
+        UserObject userObject = getUserByToken(token);
+        if(userObject != null){
+            try{
+
+                PreparedStatement preparedStatement = this.connection.prepareStatement(
+                        "INSERT INTO posts (content, creation_date,author_id) VALUES (?,?,?)"
+                );
+                preparedStatement.setString(1,content);
+                preparedStatement.setString(2,currentDateTime);
+                preparedStatement.setInt(3,userObject.getId());
+                preparedStatement.executeUpdate();
+                success = true;
+            }catch (SQLException e){
+                e.printStackTrace();
+            }
+
+        }
+        return success;
+
+    }
+
+    public List<PostObject> getUserPostsByToken(String token){
+        List<PostObject> posts = new ArrayList<>();
+        try{
+            PreparedStatement preparedStatement = this.connection.prepareStatement(
+                    "SELECT content,creation_date FROM posts p INNER JOIN users u ON u.id = p.author_id WHERE u.token = ?"
+            );
             preparedStatement.setString(1, token);
             ResultSet resultSet = preparedStatement.executeQuery();
-            if (resultSet.next()) {
-                id = resultSet.getInt("id");
+            while(resultSet.next()){
+                PostObject postObject = new PostObject();
+                postObject.setDate(resultSet.getString("creation_date"));
+                postObject.setContent(resultSet.getString("content"));
+                posts.add(postObject);
             }
-        } catch (SQLException e) {
+        }catch (SQLException e){
             e.printStackTrace();
         }
-        return id;
-
+        return posts;
     }
 
-    public List<PostObject> getPostsByUser (String token) {
-        List<PostObject> postObjects = new ArrayList<>();
+    public UserObject getFollowerProfilePage(String token, int followerId){
+
+        UserObject follower = null;
+        try{
+            int userId = getUserByToken(token).getId();
+            PreparedStatement preparedStatement = this.connection.prepareStatement(
+                    "SELECT u.id ,u.username FROM users u INNER JOIN followers f ON f.follower_id = u.id WHERE f.follower_id = ? AND f.followed_id = ?"
+            );
+            preparedStatement.setInt(1, followerId);
+            preparedStatement.setInt(2, userId);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if(resultSet.next()){
+                follower = new UserObject();
+                follower.setId(followerId);
+                follower.setUsername(resultSet.getString("username"));
+                return follower;
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return follower;
+    }
+
+    public List<UserObject> getFollowers(String token){
+        List<UserObject> followers = new ArrayList<>();
+        try{
+            int userId = getUserByToken(token).getId();
+            PreparedStatement preparedStatement = this.connection.prepareStatement(
+                    "SELECT f.follower_id,u.username FROM users u INNER JOIN followers f ON f.follower_id = u.id WHERE f.followed_id = ?"
+            );
+            preparedStatement.setInt(1, userId);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while(resultSet.next()){
+                UserObject follower = new UserObject();
+                follower.setId(resultSet.getInt("follower_id"));
+                follower.setUsername(resultSet.getString("username"));
+                followers.add(follower);
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return followers;
+    }
+
+    private boolean userNameAlreadyExists(String username) {
+        boolean exists = true;
         try {
-            Integer userId = getUserIdByToken(token);
-            if (userId != null) {
-                PreparedStatement preparedStatement = this.connection.prepareStatement("SELECT * FROM posts WHERE author_id = ? ORDER BY id DESC");
-                preparedStatement.setInt(1, userId);
-                ResultSet resultSet = preparedStatement.executeQuery();
-                while (resultSet.next()) {
-                    PostObject postObject = new PostObject();
-                    String content = resultSet.getString("content");
-                    String date = resultSet.getString("creation_date");
-                    postObject.setId(resultSet.getInt("id"));
-                    postObject.setContent(content);
-                    postObject.setDate(date);
-                    postObjects.add(postObject);
-                }
+            PreparedStatement preparedStatement = this.connection.prepareStatement(
+                    "SELECT token FROM users WHERE username = ?");
+            preparedStatement.setString(1, username);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (!resultSet.next()) {
+                exists = false;
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return postObjects;
+        return exists;
     }
 
-    public boolean removePost (String token, int postId) {
-        boolean success = false;
-        try {
-            Integer userId = getUserIdByToken(token);
-            if (userId != null) {
-                PreparedStatement preparedStatement = this.connection.prepareStatement("DELETE FROM posts WHERE id = ? AND author_id = ? ");
-                preparedStatement.setInt(1, postId);
-                preparedStatement.setInt(2, userId);
-                preparedStatement.executeUpdate();
+    private UserObject getUserByToken(String token){
+        UserObject userObject = null;
+        try{
+            PreparedStatement preparedStatement = this.connection.prepareStatement(
+                    "SELECT * FROM users WHERE token = ?"
+            );
+            preparedStatement.setString(1,token);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if(resultSet.next()){
+                userObject = new UserObject();
+                userObject.setId(resultSet.getInt("id"));
+                userObject.setUsername(resultSet.getString("username"));
+                userObject.setUsername(resultSet.getString("token"));
             }
-        } catch (SQLException e) {
+
+        }catch (SQLException e){
             e.printStackTrace();
         }
-        return success;
+        return userObject;
     }
-
 
 
 

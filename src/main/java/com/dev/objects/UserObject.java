@@ -3,10 +3,19 @@ package com.dev.objects;
 import java.util.List;
 
 public class UserObject {
+    private int id;
     private String username;
     private String password;
     private String token;
     private List<PostObject> posts;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public String getUsername() {
         return username;
