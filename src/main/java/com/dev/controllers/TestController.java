@@ -8,13 +8,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.PostConstruct;
 import javax.xml.bind.DatatypeConverter;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -44,7 +42,7 @@ public class TestController {
 
     @RequestMapping("sign-in")
     public String signIn (String username, String password) {
-        String token = persist.doesUserExists(username, password);
+        String token = persist.getTokenByUsernameAndPassword(username, password);
         return token;
     }
 
