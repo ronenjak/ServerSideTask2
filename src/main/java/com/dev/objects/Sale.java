@@ -18,7 +18,7 @@ public class Sale {
     @JoinColumn(name = "store")
     private Store store;
 
-    //test
+    //test2
     @Column(name = "beginDate")
     private String beginDate;
 
