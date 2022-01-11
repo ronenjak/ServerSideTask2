@@ -1,7 +1,6 @@
 package com.dev;
 
-import com.dev.objects.PostObject;
-import com.dev.objects.UserObject;
+import com.dev.objects.*;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Environment;
@@ -23,13 +22,15 @@ import java.util.*;
 @Profile("production")
 public class TestConfig {
 
+    //"jdbc:mysql://ashcollege.ctppcuqdmr4a.us-east-2.rds.amazonaws.com:3306/ashcollege", "collegeRoot", "uh%zH*9Eu2]gSm2"
+    //"jdbc:mysql://localhost:3306/ashCollege"
     @Bean
     public Properties dataSource() throws Exception {
         Properties settings = new Properties();
         settings.put(Environment.DRIVER, "com.mysql.jdbc.Driver");
-        settings.put(Environment.URL, "jdbc:mysql://localhost:3306/ashcollege?useSSL=false&amp;useUnicode=true&amp;characterEncoding=utf8");
-        settings.put(Environment.USER, "root");
-        settings.put(Environment.PASS, "1234");
+        settings.put(Environment.URL, "jdbc:mysql://ashcollege.ctppcuqdmr4a.us-east-2.rds.amazonaws.com:3306/ashcollege?useSSL=false&amp;useUnicode=true&amp;characterEncoding=utf8");
+        settings.put(Environment.USER, "collegeRoot");
+        settings.put(Environment.PASS, "uh%zH*9Eu2]gSm2");
         settings.put(Environment.DIALECT, "org.hibernate.dialect.MySQL5Dialect");
         settings.put(Environment.SHOW_SQL, "true");
         settings.put(Environment.CURRENT_SESSION_CONTEXT_CLASS, "thread");
@@ -37,6 +38,9 @@ public class TestConfig {
         settings.put(Environment.ENABLE_LAZY_LOAD_NO_TRANS, true);
         return settings;
     }
+
+
+
 
     @Bean
     public SessionFactory sessionFactory() throws Exception {
@@ -46,13 +50,25 @@ public class TestConfig {
         for (Class<? extends Object> clazz : entities) {
             configuration.addAnnotatedClass(clazz);
         }
-        configuration.addAnnotatedClass(UserObject.class);
-        configuration.addAnnotatedClass(PostObject.class);
+
+
+
+        configuration.addAnnotatedClass(Organization.class);
+        configuration.addAnnotatedClass(RelationshipUO.class);
+        configuration.addAnnotatedClass(RelationshipSaleO.class);
+        configuration.addAnnotatedClass(Sale.class);
+        configuration.addAnnotatedClass(Store.class);
+        configuration.addAnnotatedClass(User.class);
 
         ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
                 .applySettings(configuration.getProperties()).build();
         return configuration.buildSessionFactory(serviceRegistry);
     }
+
+
+
+
+
 
 
     @Bean
