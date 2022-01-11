@@ -18,6 +18,7 @@ public class Sale {
     @JoinColumn(name = "store")
     private Store store;
 
+    //test
     @Column(name = "beginDate")
     private String beginDate;
 
