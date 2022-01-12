@@ -15,5 +15,11 @@ public class Response {
         this.errorCode = errorCode;
     }
 
+    public boolean isSuccess() {
+        return success;
+    }
 
+    public int getErrorCode() {
+        return errorCode;
+    }
 }
