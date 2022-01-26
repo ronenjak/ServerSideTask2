@@ -1,6 +1,8 @@
 package com.dev.controllers;
 import com.dev.objects.Organization;
 import com.dev.Persist;
+import com.dev.objects.RelationshipUO;
+import com.dev.objects.Store;
 import com.dev.responses.ErrorCodes;
 import com.dev.responses.Response;
 import com.dev.responses.ResponseData;
@@ -47,22 +49,29 @@ public class TestController {
         return new ResponseData(organizations);
     }
 
-    @RequestMapping("remove-relationshipUO")
-    public Response removeRelationshipUO(String token,int organizationId){
-        boolean success = persist.removeRelationshipUO(token, organizationId);
-        return new Response(success, ErrorCodes.SUCCESS);
+    @RequestMapping("change-relationshipUO")
+    public Response removeRelationshipUO(String token,int organizationId, boolean friendShip){
+        boolean success = persist.changeRelationshipUO(token, organizationId,friendShip);
+        return new Response(success);
     }
 
-    @RequestMapping("add-relationshipUO")
-    public Response addRelationshipUOByUserId(String token,int organizationId){
-        boolean success = persist.addRelationshipUOByUserId(token, organizationId);
-        return new Response(success, ErrorCodes.SUCCESS);
-    }
 
     @RequestMapping("get-stores")
-    public ResponseData getStores(){
-        List<Object> stores =  persist.getStores();
+    public ResponseData getAllStores(){
+        List<Object> stores =  persist.getAllStores();
         return new ResponseData(stores);
+    }
+
+    @RequestMapping("getStoreByStoreId")
+    public ResponseData getStoreByStoreId(int storeId){
+        List<Object> listToReturn = persist.getStoreByStoreId(storeId);
+        return new ResponseData(listToReturn);
+    }
+
+    @RequestMapping("getSalesByStoreId")
+    public ResponseData getSalesByStoreId(int storeId){
+        List<Object> listToReturn = persist.getSalesByStoreId(storeId);
+        return new ResponseData(listToReturn);
     }
 
 
