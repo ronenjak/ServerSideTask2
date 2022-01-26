@@ -7,6 +7,7 @@ public class ResponseData extends Response{
 
 
     public ResponseData(boolean success, int errorCode, List<Object> dataSet){
+        super(true,ErrorCodes.SUCCESS);
         this.dataSet = dataSet;
     }
 
