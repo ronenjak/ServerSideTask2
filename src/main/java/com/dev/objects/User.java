@@ -8,7 +8,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column
-    private int id;
+    public int id;
 
     @Column(name = "username")
     private String username;
@@ -16,11 +16,12 @@ public class User {
     @Column(name = "password")
     private String password;
 
+    @Column(name = "firstTimeLoggedIn")
+    private boolean firstTimeLoggedIn;
+
     @Column(name = "token")
     private String token;
 
-    @Column(name = "firstTimeLoggedIn")
-    private boolean firstTimeLoggedIn;
 
     public String getToken() {
         return token;
@@ -29,7 +30,6 @@ public class User {
     public void setToken(String token) {
         this.token = token;
     }
-
 
     public int getId() {
         return id;
@@ -62,5 +62,4 @@ public class User {
     public void setFirstTimeLoggedIn(boolean firstTimeLoggedIn) {
         this.firstTimeLoggedIn = firstTimeLoggedIn;
     }
-
 }
