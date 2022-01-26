@@ -43,14 +43,18 @@ public class TestController {
         return new ResponseData(sales);
     }
 
-    @RequestMapping("/login")
+    @RequestMapping(value = "/login" , method = {RequestMethod.GET, RequestMethod.POST})
     public ResponseData login(String username, String password) {
         //also count number of blocked accounts
+        String token;
         int blockedCounter;
+        boolean isFirstTime;
         int errorCode;
         if (persist.usernameExist(username)) { // if username exists in the table
-            String token = persist.getTokenByUsernameAndPassword(username, password); // get the token
-            if (token == null) {// if the token is broken (login is not valid)
+
+            token = persist.getTokenByUsernameAndPassword(username, password); // post username and password and gets the token from DB
+
+            if (token == null) {// if the query returned null token
                 //update the block counter in DB and return it to counter here.
                 blockedCounter = persist.checkAndUpdateUserBlock(username, false);
                 //encapsulated assignment for error code depending if the user got blocked.
@@ -58,8 +62,10 @@ public class TestController {
                 //Assign to the list data
                 return new ResponseData(false, errorCode, Collections.singletonList(blockedCounter + " = number of wrong tries"));
             } else {
-                // If it's the correct credentials, reset counter and
+                // If it's the correct credentials, and we got back good token!!! ,
                 blockedCounter = persist.checkAndUpdateUserBlock(username, true);
+
+                //If user is not blocked return token
                 if (blockedCounter < 5)
                     return new ResponseData(Collections.singletonList(token));
                 else
@@ -70,4 +76,6 @@ public class TestController {
         return new ResponseData(false, ErrorCodes.INCORRECT_USERNAME, Collections.singletonList(username + "This username is wrong"));
     }
 
+    @RequestMapping(value = "/isFirstTime" , method = {RequestMethod.GET, RequestMethod.POST})
+    public ResponseData
 }

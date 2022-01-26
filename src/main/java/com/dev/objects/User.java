@@ -22,6 +22,9 @@ public class User {
     @Column(name = "token")
     private String token;
 
+    @Column(name = "blockCounter")
+    private int blockCounter;
+
 
     public String getToken() {
         return token;
@@ -62,4 +65,9 @@ public class User {
     public void setFirstTimeLoggedIn(boolean firstTimeLoggedIn) {
         this.firstTimeLoggedIn = firstTimeLoggedIn;
     }
+
+    public int getBlockCounter() {
+        return blockCounter;
+    }
+    public void setBlockCounter(int number){this.blockCounter = number;}
 }
