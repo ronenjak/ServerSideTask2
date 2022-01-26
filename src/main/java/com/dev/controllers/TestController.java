@@ -1,6 +1,7 @@
 package com.dev.controllers;
-
+import com.dev.objects.Organization;
 import com.dev.Persist;
+import com.dev.responses.ErrorCodes;
 import com.dev.responses.Response;
 import com.dev.responses.ResponseData;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,6 @@ public class TestController {
 
     }
 
-
     @RequestMapping(value = "/test" , method = {RequestMethod.GET, RequestMethod.POST})
     public Response test(String token) {
         List<Object> sales1 = persist.getSalesByUserToken(token);
@@ -40,6 +40,31 @@ public class TestController {
         List<Object> sales = persist.getSalesByUserToken(token);
         return new ResponseData(sales);
     }
+
+    @RequestMapping("get-organizations")
+    public ResponseData getOrganizations(String token){
+        List<Object> organizations =  persist.getOrganizations(token);
+        return new ResponseData(organizations);
+    }
+
+    @RequestMapping("remove-relationshipUO")
+    public Response removeRelationshipUO(String token,int organizationId){
+        boolean success = persist.removeRelationshipUO(token, organizationId);
+        return new Response(success, ErrorCodes.SUCCESS);
+    }
+
+    @RequestMapping("add-relationshipUO")
+    public Response addRelationshipUOByUserId(String token,int organizationId){
+        boolean success = persist.addRelationshipUOByUserId(token, organizationId);
+        return new Response(success, ErrorCodes.SUCCESS);
+    }
+
+    @RequestMapping("get-stores")
+    public ResponseData getStores(){
+        List<Object> stores =  persist.getStores();
+        return new ResponseData(stores);
+    }
+
 
 
 
