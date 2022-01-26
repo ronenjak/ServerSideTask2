@@ -48,4 +48,13 @@ public class Persist {
         }
         return userSales;
     }
+
+    public boolean usernameExist(String username) {
+    }
+
+    public String getTokenByUsernameAndPassword(String username, String password) {
+    }
+
+    public int checkAndUpdateUserBlock(String username, boolean b) {
+    }
 }

@@ -17,4 +17,7 @@ public class ResponseData extends Response{
     public List<Object> getDataSet() {
         return dataSet;
     }
+
+    public void setResponseWithData(boolean b, int errorCode, String s) {
+    }
 }
