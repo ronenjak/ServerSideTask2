@@ -28,6 +28,7 @@ public class Sale {
     @Column(name = "forAllUsers")
     private boolean forAllUsers;
 
+
     public int getId() {
         return id;
     }

@@ -40,8 +40,6 @@ public class TestConfig {
     }
 
 
-
-
     @Bean
     public SessionFactory sessionFactory() throws Exception {
         org.hibernate.cfg.Configuration configuration = new org.hibernate.cfg.Configuration();
@@ -50,8 +48,6 @@ public class TestConfig {
         for (Class<? extends Object> clazz : entities) {
             configuration.addAnnotatedClass(clazz);
         }
-
-
 
         configuration.addAnnotatedClass(Organization.class);
         configuration.addAnnotatedClass(RelationshipUO.class);
@@ -64,12 +60,6 @@ public class TestConfig {
                 .applySettings(configuration.getProperties()).build();
         return configuration.buildSessionFactory(serviceRegistry);
     }
-
-
-
-
-
-
 
     @Bean
     public HibernateTransactionManager transactionManager() throws Exception{
