@@ -23,6 +23,17 @@ public class User {
     private String token;
 
 
+    public User(){
+
+    }
+
+    public User( String username, String password ,String token) {
+        this.username = username;
+        this.password = password;
+        this.firstTimeLoggedIn = true;
+        this.token = token;
+    }
+
     public String getToken() {
         return token;
     }

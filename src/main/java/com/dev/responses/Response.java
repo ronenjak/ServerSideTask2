@@ -17,7 +17,7 @@ public class Response {
 
     public Response(boolean success){
         this.success = success;
-        this.errorCode = success ? ErrorCodes.SUCCESS : ErrorCodes.GENERAL_ERROR;
+        this.errorCode = success ? ErrorCodes.SUCCESS : ErrorCodes.ERROR_CODE;
     }
 
     public boolean isSuccess() {

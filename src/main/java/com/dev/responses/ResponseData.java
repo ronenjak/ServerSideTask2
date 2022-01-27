@@ -14,7 +14,7 @@ public class ResponseData extends Response{
         this.dataSet = dataSet;
         if(dataSet == null){
             super.setSuccess(false);
-            super.setErrorCode(ErrorCodes.GENERAL_ERROR);
+            super.setErrorCode(ErrorCodes.ERROR_CODE);
         }
     }
 

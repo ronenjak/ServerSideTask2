@@ -12,6 +12,9 @@ import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.xml.bind.DatatypeConverter;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,26 +32,29 @@ public class Persist {
     public List<Object> getSalesByUserToken(String token) {
         List<Integer> userOrganizationsIds = null;
         List<Sale> allSales = null;
-        List<Object> userSales = new ArrayList<>(); // return object list so we can add this to the responseData
+        List<Object> userSalesList = new ArrayList<>(); // return object list so we can add this to the responseData
         try {
             Session session = sessionFactory.openSession(); // if somebody can do this in 1 query, the foreach lines won't be necessary
-            userOrganizationsIds = session.createQuery("SELECT ruo.organization.id FROM RelationshipUO ruo WHERE ruo.user.token = :token")
+            List<Sale> userSales = session.createQuery("SELECT rso.sale FROM RelationshipSaleO rso " +
+                    "WHERE rso.organization.id IN " +
+                    "(SELECT ruo.organization.id FROM RelationshipUO ruo WHERE user.id = (SELECT user.id From User user WHERE user.token =: token ))")
                     .setParameter("token", token)
                     .list();
+
             allSales = session.createQuery("FROM Sale").list();
             session.close();
 
             for (Sale sale : allSales) {
-                UsersObject usersSale = new UsersObject(sale);
-                if (userOrganizationsIds.contains(sale.getId()) || sale.isForAllUsers()) {
-                    usersSale.setBelongsToUser(true);
+                UsersObject usersObject = new UsersObject(sale);
+                if (userSales.contains(sale) || sale.isForAllUsers()) {
+                    usersObject.setBelongsToUser(true);
                 }
-                userSales.add(usersSale);
+                userSalesList.add(usersObject);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return userSales;
+        return userSalesList;
     }
 
     public List<Object> getOrganizations(String token) {
@@ -208,18 +214,62 @@ public class Persist {
         return stores;
     }
 
+    public boolean signUp(String username, String password){
+
+        boolean success = false;
+        User user = null;
+        try {
+            Session session = sessionFactory.openSession();
+            user = (User) session.createQuery("FROM User u WHERE u.username = :username")
+                    .setParameter("username", username)
+                    .uniqueResult();
+            session.close();
+
+            if(user == null){
+
+                String token = createHash(username,password);
+                user = new User(username,password,token);
+                session = sessionFactory.openSession();
+                Transaction transaction = session.beginTransaction();
+                session.saveOrUpdate(user);
+                transaction.commit();
+                session.close();
+                success = true;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return success;
+    }
+
     public boolean validateToken(String token) {
         User user = null;
         try {
             Session session = sessionFactory.openSession();
-            user = (User) session.createQuery("FROM User WHERE token = :token")
+            user = (User) session.createQuery("FROM User u WHERE u.token = :token")
                     .setParameter("token", token)
                     .uniqueResult();
             session.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return (user == null);
+        return (user != null);
+    }
+
+    public boolean isFirstTimeLoggedIn(String token){
+
+        boolean isFirstTime = false;
+        try {
+            Session session = sessionFactory.openSession();
+            isFirstTime =  (boolean) session.createQuery("SELECT u.firstTimeLoggedIn FROM User u WHERE u.token = :token")
+                    .setParameter("token", token)
+                    .uniqueResult();
+            session.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return isFirstTime;
     }
 
     public List<Object> getTokenByUsernameAndPassword(String username, String password) {
@@ -239,5 +289,21 @@ public class Persist {
             e.printStackTrace();
         }
         return tokenList;
+    }
+
+    private String createHash (String username, String password) {
+        String myHash = null;
+        try {
+            String hash = "35454B055CC325EA1AF2126E27707052";
+
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            md.update((username + password).getBytes());
+            byte[] digest = md.digest();
+            myHash = DatatypeConverter
+                    .printHexBinary(digest).toUpperCase();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return myHash;
     }
 }

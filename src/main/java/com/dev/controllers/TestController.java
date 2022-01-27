@@ -33,6 +33,12 @@ public class TestController {
         return new ResponseData(token);
     }
 
+    @RequestMapping("/create-account")
+    public Response signUp(String username , String password){
+        boolean success = persist.signUp(username, password);
+        return new Response(success);
+    }
+
     @RequestMapping("/validateToken")
     public Response validateToken(String token) { // this method will check if the token is valid
         boolean validToken = persist.validateToken(token);
@@ -61,12 +67,18 @@ public class TestController {
         return new ResponseData(organizations);
     }
 
+    @RequestMapping("isFirstTime")
+    public Response isFirstTime(String token){
+        boolean isFirstTime =  persist.isFirstTimeLoggedIn(token);
+        return new Response(isFirstTime);
+    }
+
+
     @RequestMapping("change-relationshipUO")
     public Response removeRelationshipUO(String token,int organizationId, boolean friendShip){
         boolean success = persist.changeRelationshipUO(token, organizationId,friendShip);
         return new Response(success);
     }
-
 
     @RequestMapping("get-stores")
     public ResponseData getAllStores(){
