@@ -24,7 +24,19 @@ public class TestController {
 
     @PostConstruct
     private void init() {
+    }
 
+    // Login and signup related
+    @RequestMapping("/login")
+    public ResponseData login(String username , String password){
+        List<Object> token = persist.getTokenByUsernameAndPassword(username, password);
+        return new ResponseData(token);
+    }
+
+    @RequestMapping("/validateToken")
+    public Response validateToken(String token) { // this method will check if the token is valid
+        boolean validToken = persist.validateToken(token);
+        return new Response(validToken);
     }
 
     @RequestMapping(value = "/test" , method = {RequestMethod.GET, RequestMethod.POST})

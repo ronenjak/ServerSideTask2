@@ -5,7 +5,6 @@ import java.util.List;
 public class ResponseData extends Response{
     private List<Object> dataSet;
 
-
     public ResponseData(boolean success, int errorCode, List<Object> dataSet){
         super(success,errorCode);
         this.dataSet = dataSet;
