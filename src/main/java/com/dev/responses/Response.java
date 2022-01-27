@@ -15,6 +15,11 @@ public class Response {
         this.errorCode = errorCode;
     }
 
+    public Response(boolean success){
+        this.success = success;
+        this.errorCode = success ? ErrorCodes.SUCCESS : ErrorCodes.GENERAL_ERROR;
+    }
+
     public boolean isSuccess() {
         return success;
     }

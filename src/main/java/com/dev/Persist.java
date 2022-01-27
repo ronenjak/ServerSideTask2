@@ -5,6 +5,7 @@ import com.dev.objects.*;
 import com.dev.responses.Response;
 import com.dev.responses.ResponseData;
 import com.dev.utils.UsersObject;
+import org.aspectj.weaver.ast.Or;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -82,6 +83,39 @@ public class Persist {
         return totalOrganizations;
     }
 
+
+    public User getUserByToken(String token){
+        User user = null;
+        try{
+            Session session = sessionFactory.openSession();
+            user = (User) session.createQuery("FROM User WHERE token = :token")
+                    .setParameter("token", token)
+                    .uniqueResult();
+            session.close();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return user;
+    }
+
+    public Organization getOrganizationById(int organizationId){
+        Organization organization = null;
+        try{
+            Session session = sessionFactory.openSession();
+            organization = (Organization) session.createQuery("FROM Organization WHERE id = :id")
+                    .setParameter("id", organizationId)
+                    .uniqueResult();
+            session.close();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return organization;
+    }
+
     public Integer getUserIdByToken (String token) {
         Integer id = null;
         Session session = sessionFactory.openSession();
@@ -95,64 +129,90 @@ public class Persist {
         return id;
     }
 
-    public boolean removeRelationshipUO (String token, int organizationId) {
+
+    public boolean changeRelationshipUO (String token, int organizationId, boolean friendShip) {
         boolean success = false;
-        Integer userId = getUserIdByToken(token);
-        if (userId != null) {
+        User user = getUserByToken(token);
+        Organization organization = getOrganizationById(organizationId);
+        if (user != null && organization != null) {
             try {
-                Session session = sessionFactory.openSession();
-                Transaction transaction = session.beginTransaction();
-                session.createQuery("DELETE FROM RelationshipUO r WHERE r.id = :id AND user.id = :userId")
-                        .setParameter("id", organizationId)
-                        .setParameter("userId", userId)
-                        .executeUpdate();
-                transaction.commit();
-                session.close();
+                if(friendShip){
+                    RelationshipUO relationshipUO = new RelationshipUO(user,organization);
+                    Session session = sessionFactory.openSession();
+                    Transaction transaction = session.beginTransaction();
+                    session.saveOrUpdate(relationshipUO);
+                    transaction.commit();
+                    session.close();
+                }
+                else{
+                    Session session = sessionFactory.openSession();
+                    Transaction transaction = session.beginTransaction();
+                    session.createQuery("DELETE FROM RelationshipUO r WHERE r.organization.id = :id AND r.user.id = :userId")
+                            .setParameter("id", organizationId)
+                            .setParameter("userId", user.getId())
+                            .executeUpdate();
+                    transaction.commit();
+                    session.close();
+                }
                 success = true;
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
         return success;
-
     }
 
 
-    public boolean addRelationshipUOByUserId(String token,int organizationId) {
-        boolean success = false;
-        Integer userId = getUserIdByToken(token);
-        if (userId != null) {
-            RelationshipUO relationshipUO = new RelationshipUO();
-            User user = new User();
-            Organization organization = new Organization();
-            user.setId(userId);
-            organization.setId(organizationId);
-            relationshipUO.setUser(user);
-            relationshipUO.setOrganization(organization);
-            try {
-                Session session = sessionFactory.openSession();
-                Transaction transaction = session.beginTransaction();
-                session.saveOrUpdate(relationshipUO);
-                transaction.commit();
-                session.close();
-                if (relationshipUO.getId() > 0) {
-                    success = true;
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+
+
+    public List<Object> getStoreByStoreId(int storeId){
+        List<Object> listToReturn = null;
+
+        try{
+            Session session = sessionFactory.openSession();
+            Store store = (Store) session.createQuery("FROM Store s WHERE s.id = :id")
+                    .setParameter("id", storeId)
+                    .uniqueResult();
+            session.close();
+            if(store != null){
+                listToReturn = new ArrayList<>();
+                listToReturn.add(store);
             }
         }
-        return success;
-
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        return listToReturn;
     }
 
-    public List<Object> getStores(){
-        List<Object> stores = new ArrayList<>();
-        Session session = sessionFactory.openSession();
-        stores = (List<Object>) session.createQuery(
-                " FROM Store ")
-                .list();
-        session.close();
+    public List<Object> getSalesByStoreId(int storeId){
+            List<Object> sales = null;
+            try{
+                Session session = sessionFactory.openSession();
+                sales = (List<Object>) session.createQuery("FROM Sale s WHERE s.store.id = :id")
+                        .setParameter("id", storeId)
+                        .list();
+                session.close();
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
+            return sales;
+    }
+
+    public List<Object> getAllStores(){
+        List<Object> stores = null;
+        try{
+            Session session = sessionFactory.openSession();
+            stores = (List<Object>) session.createQuery(
+                    " FROM Store ")
+                    .list();
+            session.close();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
         return stores;
     }
 

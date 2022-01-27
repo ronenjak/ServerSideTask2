@@ -7,12 +7,16 @@ public class ResponseData extends Response{
 
 
     public ResponseData(boolean success, int errorCode, List<Object> dataSet){
-        super(true,ErrorCodes.SUCCESS);
+        super(success,errorCode);
         this.dataSet = dataSet;
     }
 
-    public ResponseData(List<Object> dataSet){
+    public ResponseData(List<Object> dataSet){ // notice we have a default constructor in Response() that makes success "true" automatically
         this.dataSet = dataSet;
+        if(dataSet == null){
+            super.setSuccess(false);
+            super.setErrorCode(ErrorCodes.GENERAL_ERROR);
+        }
     }
 
     public List<Object> getDataSet() {

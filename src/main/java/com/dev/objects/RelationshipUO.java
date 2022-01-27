@@ -19,6 +19,14 @@ public class RelationshipUO {
     @JoinColumn (name = "organization_id")
     private Organization organization;
 
+    public RelationshipUO(){
+
+    }
+    public RelationshipUO(User user, Organization organization) {
+        this.user = user;
+        this.organization = organization;
+    }
+
     public int getId() {
         return id;
     }
