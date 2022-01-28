@@ -6,6 +6,7 @@ import com.dev.objects.Store;
 import com.dev.responses.ErrorCodes;
 import com.dev.responses.Response;
 import com.dev.responses.ResponseData;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -40,9 +41,9 @@ public class TestController {
     }
 
     @RequestMapping("/validateToken")
-    public Response validateToken(String token) { // this method will check if the token is valid
-        boolean validToken = persist.validateToken(token);
-        return new Response(validToken);
+    public ResponseData validateToken(String token) { // this method will check if the token is valid
+        List<Object> validateList = persist.validateToken(token);
+        return new ResponseData(validateList);
     }
 
     @RequestMapping(value = "/test" , method = {RequestMethod.GET, RequestMethod.POST})

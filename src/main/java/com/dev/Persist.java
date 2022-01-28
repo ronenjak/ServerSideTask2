@@ -5,10 +5,12 @@ import com.dev.objects.*;
 import com.dev.responses.Response;
 import com.dev.responses.ResponseData;
 import com.dev.utils.UsersObject;
+import com.dev.utils.Utils;
 import org.aspectj.weaver.ast.Or;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -214,6 +216,8 @@ public class Persist {
         return stores;
     }
 
+
+
     public boolean signUp(String username, String password){
 
         boolean success = false;
@@ -227,7 +231,7 @@ public class Persist {
 
             if(user == null){
 
-                String token = createHash(username,password);
+                String token = Utils.createHash(username,password);
                 user = new User(username,password,token);
                 session = sessionFactory.openSession();
                 Transaction transaction = session.beginTransaction();
@@ -243,18 +247,25 @@ public class Persist {
         return success;
     }
 
-    public boolean validateToken(String token) {
-        User user = null;
+    public List<Object> validateToken(String token) {
+        List<Object> validateList = null;
         try {
             Session session = sessionFactory.openSession();
-            user = (User) session.createQuery("FROM User u WHERE u.token = :token")
+            User user = (User) session.createQuery("FROM User u WHERE u.token = :token")
                     .setParameter("token", token)
                     .uniqueResult();
             session.close();
+            if(user != null) {
+                validateList = new ArrayList<>();
+                JSONObject response = new JSONObject();
+                response.put("success", true);
+                response.put("isFirstTime", user.isFirstTimeLoggedIn());
+                validateList.add(response.toString());
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return (user != null);
+        return validateList;
     }
 
     public boolean isFirstTimeLoggedIn(String token){
@@ -270,6 +281,35 @@ public class Persist {
             e.printStackTrace();
         }
         return isFirstTime;
+    }
+
+    public List<RelationshipSaleO> getAllRelationshipsSaleO() {
+        List<RelationshipSaleO> rso = null;
+        try {
+            Session session = sessionFactory.openSession();
+            rso = (List<RelationshipSaleO>) session.createQuery(
+                    "FROM RelationshipSaleO ")
+                    .list();
+            session.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return rso;
+    }
+
+    public List<RelationshipUO> getAllRelationshipsUO() {
+        List<RelationshipUO> ruo = null;
+        try {
+            Session session = sessionFactory.openSession();
+            ruo = (List<RelationshipUO>) session.createQuery(
+                    " FROM RelationshipUO ")
+                    .list();
+            session.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return ruo;
     }
 
     public List<Object> getTokenByUsernameAndPassword(String username, String password) {
@@ -291,19 +331,21 @@ public class Persist {
         return tokenList;
     }
 
-    private String createHash (String username, String password) {
-        String myHash = null;
-        try {
-            String hash = "35454B055CC325EA1AF2126E27707052";
+    public void updateNotificationStatus(int saleId){
 
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            md.update((username + password).getBytes());
-            byte[] digest = md.digest();
-            myHash = DatatypeConverter
-                    .printHexBinary(digest).toUpperCase();
-        } catch (NoSuchAlgorithmException e) {
+        //UPDATE Orders SET Quantity = Quantity + 1 WHERE ...
+        try {
+            Session session = sessionFactory.openSession();
+            Transaction transaction = session.beginTransaction();
+            session.createQuery("UPDATE Sale s SET s.notifiedStatus = s.notifiedStatus + 1 WHERE s.id = :id")
+                    .setParameter("id", saleId)
+                    .executeUpdate();
+            transaction.commit();
+            session.close();
+        } catch (Exception e){
             e.printStackTrace();
         }
-        return myHash;
     }
+
+
 }

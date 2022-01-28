@@ -1,6 +1,9 @@
 package com.dev.objects;
 
+import org.json.JSONObject;
+
 import javax.persistence.*;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "sale")
@@ -20,14 +23,25 @@ public class Sale {
 
     //test2
     @Column(name = "beginDate")
-    private String beginDate;
+    private LocalDate beginDate;
 
     @Column(name = "expirationDate")
-    private String expirationDate;
+    private LocalDate expirationDate;
 
     @Column(name = "forAllUsers")
     private boolean forAllUsers;
 
+    @Column(name = "notifiedStatus")
+    private int notifiedStatus;
+
+
+    public int getNotifiedStatus() {
+        return notifiedStatus;
+    }
+
+    public void setNotifiedStatus(int notifiedStatus) {
+        this.notifiedStatus = notifiedStatus;
+    }
 
     public int getId() {
         return id;
@@ -53,19 +67,19 @@ public class Sale {
         this.store = store;
     }
 
-    public String getBeginDate() {
+    public LocalDate getBeginDate() {
         return beginDate;
     }
 
-    public void setBeginDate(String beginDate) {
+    public void setBeginDate(LocalDate beginDate) {
         this.beginDate = beginDate;
     }
 
-    public String getExpirationDate() {
+    public LocalDate getExpirationDate() {
         return expirationDate;
     }
 
-    public void setExpirationDate(String expirationDate) {
+    public void setExpirationDate(LocalDate expirationDate) {
         this.expirationDate = expirationDate;
     }
 
@@ -75,5 +89,20 @@ public class Sale {
 
     public void setForAllUsers(boolean forAllUsers) {
         this.forAllUsers = forAllUsers;
+    }
+
+    /*public JSONObject toJsonObject(){
+        JSONObject sale = new JSONObject();
+        JSONObject store = new JSONObject();
+        sale.put("description", this.description);
+        sale.put("expirationDate", this.expirationDate.toString());
+        store.put("name", this.store.getName());
+        store.put("area", this.store.getArea());
+        sale.put("store",store);
+        return sale;
+    }*/
+
+    public String toString(){
+        return "Sale: " + description + " at the store: " + store.getName();
     }
 }
