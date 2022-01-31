@@ -74,7 +74,6 @@ public class TestController {
         return new Response(isFirstTime);
     }
 
-
     @RequestMapping("change-relationshipUO")
     public Response removeRelationshipUO(String token,int organizationId, boolean friendShip){
         boolean success = persist.changeRelationshipUO(token, organizationId,friendShip);
@@ -98,8 +97,5 @@ public class TestController {
         List<Object> listToReturn = persist.getSalesByStoreId(storeId);
         return new ResponseData(listToReturn);
     }
-
-
-
 
 }

@@ -48,7 +48,7 @@ public class Persist {
 
             for (Sale sale : allSales) {
                 UsersObject usersObject = new UsersObject(sale);
-                if (userSales.contains(sale) || sale.isForAllUsers()) {
+                if (userSales.contains(sale) || sale.isForAllUsers() ) {
                     usersObject.setBelongsToUser(true);
                 }
                 userSalesList.add(usersObject);
@@ -261,11 +261,27 @@ public class Persist {
                 response.put("success", true);
                 response.put("isFirstTime", user.isFirstTimeLoggedIn());
                 validateList.add(response.toString());
+                updateFirstTimeLoggedIn(user.getId());
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return validateList;
+    }
+
+    private void updateFirstTimeLoggedIn(int userId){
+        try{
+            Session session = sessionFactory.openSession();
+            Transaction transaction = session.beginTransaction();
+            session.createQuery("UPDATE User u SET u.firstTimeLoggedIn = false WHERE u.id = :id")
+                    .setParameter("id", userId)
+                    .executeUpdate();
+            transaction.commit();
+            session.close();
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     public boolean isFirstTimeLoggedIn(String token){
@@ -316,15 +332,20 @@ public class Persist {
         List<Object> tokenList = null;
         try{
             Session session = sessionFactory.openSession();
-            String token = (String) session.createQuery("SELECT token FROM User WHERE username = :username AND password = :password")
+            User user = (User) session.createQuery("FROM User WHERE username = :username AND password = :password")
                     .setParameter("username", username)
                     .setParameter("password", password)
                     .uniqueResult();
             session.close();
-            if(token != null){
+            if (user != null) {
                 tokenList = new ArrayList<>();
-                tokenList.add(token);
+                JSONObject response = new JSONObject();
+                response.put("success", true);
+                response.put("isFirstTime", user.isFirstTimeLoggedIn());
+                response.put("token", user.getToken());
+                tokenList.add(response.toString());
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
