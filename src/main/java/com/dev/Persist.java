@@ -2,8 +2,10 @@ package com.dev;
 
 import com.dev.objects.*;
 
+import com.dev.responses.ErrorCodes;
 import com.dev.responses.Response;
 import com.dev.responses.ResponseData;
+import com.dev.utils.Constants;
 import com.dev.utils.UsersObject;
 import com.dev.utils.Utils;
 import org.aspectj.weaver.ast.Or;
@@ -255,14 +257,17 @@ public class Persist {
                     .setParameter("token", token)
                     .uniqueResult();
             session.close();
+            validateList = new ArrayList<>();
+            JSONObject response = new JSONObject();
             if(user != null) {
-                validateList = new ArrayList<>();
-                JSONObject response = new JSONObject();
                 response.put("success", true);
                 response.put("isFirstTime", user.isFirstTimeLoggedIn());
-                validateList.add(response.toString());
                 updateFirstTimeLoggedIn(user.getId());
             }
+            else{
+                response.put("success", false);
+            }
+            validateList.add(response.toString());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -337,13 +342,10 @@ public class Persist {
                     .setParameter("password", password)
                     .uniqueResult();
             session.close();
+
             if (user != null) {
                 tokenList = new ArrayList<>();
-                JSONObject response = new JSONObject();
-                response.put("success", true);
-                response.put("isFirstTime", user.isFirstTimeLoggedIn());
-                response.put("token", user.getToken());
-                tokenList.add(response.toString());
+                tokenList.add(user.getToken());
             }
 
         } catch (Exception e) {
